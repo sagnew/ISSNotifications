@@ -19,4 +19,4 @@ def subscribe():
     iss.add_to_queue(number, lat, lon)
     return render_template('subscribed.html')
 
-app.run(host='0.0.0.0')
+app.run(host='0.0.0.0', debug=True)

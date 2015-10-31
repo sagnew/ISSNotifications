@@ -17,6 +17,8 @@ def get_next_pass(lat, lon):
     response = requests.get(iss_url, params=location).json()
 
     next_pass = response['response'][0]['risetime']
+
+    print 'Next pass is: ' + str(datetime.fromtimestamp(next_pass))
     return datetime.fromtimestamp(next_pass)
 
 
@@ -29,6 +31,9 @@ def add_to_queue(number, lat, lon):
 
     # Schedule a text to be sent at the time of the next flyby.
     scheduler.enqueue_at(next_pass_timestamp, notify_subscriber, number)
+
+    print str(number) + ' has been added to the queue at ' \
+        + str(lat) + ', ' + str(lon)
 
 
 def notify_subscriber(number):
@@ -43,3 +48,5 @@ def notify_subscriber(number):
 
     # Add the subscriber back to the queue to receive their next flyby message.
     add_to_queue(number, lat, lon)
+
+    print 'Message has been sent to ' + number
