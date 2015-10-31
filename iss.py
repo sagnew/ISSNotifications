@@ -40,3 +40,6 @@ def notify_subscriber(number):
 
     # Send a message to the number alerting them of an ISS flyby.
     client.messages.create(to=number, from_='', body=msg_body)
+
+    # Add the subscriber back to the queue to receive their next flyby message.
+    add_to_queue(number, lat, lon)
