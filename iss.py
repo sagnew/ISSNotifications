@@ -40,8 +40,8 @@ def add_to_queue(number, lat, lon):
 
 
 def notify_subscriber(number):
-    msg_body = "Look up! You may not be able to see it, but the International" \
-               " Space Station is passing above you right now!"
+    msg_body = 'Look up! You may not be able to see it, but the International' \
+               ' Space Station is passing above you right now!'
 
     # Retrieve the latitude and longitude associated with this number.
     lat, lon = redis_server.get(number).split(',')
