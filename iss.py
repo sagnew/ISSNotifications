@@ -5,8 +5,11 @@ from rq_scheduler import Scheduler
 from twilio.rest import TwilioRestClient
 from datetime import datetime
 
+# Open a connection to your Redis server.
 redis_server = Redis()
-scheduler = Scheduler(connection=Redis())
+
+# Create a scheduler object with your Redis server.
+scheduler = Scheduler(connection=redis_server)
 
 client = TwilioRestClient()
 
