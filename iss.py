@@ -4,6 +4,7 @@ from rq_scheduler import Scheduler
 
 from twilio.rest import TwilioRestClient
 from datetime import datetime
+import pytz
 
 # Open a connection to your Redis server.
 redis_server = Redis()
@@ -20,20 +21,21 @@ def get_next_pass(lat, lon):
     response = requests.get(iss_url, params=location).json()
 
     next_pass = response['response'][0]['risetime']
+    next_pass_datetime = datetime.fromtimestamp(next_pass, tz=pytz.utc)
 
-    print('Next pass is: {}'.format(datetime.fromtimestamp(next_pass)))
-    return datetime.fromtimestamp(next_pass)
+    print('Next pass for {}, {} is: {}'.format(next_pass_datetime, lat, lon))
+    return next_pass_datetime
 
 
 def add_to_queue(phone_number, lat, lon):
     # Add this phone number to Redis associated with "lat,lon"
     redis_server.set(phone_number, '{},{}'.format(lat, lon))
 
-    # Get the timestamp of the next ISS flyby for this number.
-    next_pass_timestamp = get_next_pass(lat, lon)
+    # Get the datetime object representing the next ISS flyby for this number.
+    next_pass_datetime = get_next_pass(lat, lon)
 
     # Schedule a text to be sent at the time of the next flyby.
-    scheduler.enqueue_at(next_pass_timestamp, notify_subscriber, phone_number)
+    scheduler.enqueue_at(next_pass_datetime, notify_subscriber, phone_number)
 
     print('{} will be notified when ISS passes by {}, {}'
           .format(phone_number, lat, lon))
@@ -48,7 +50,7 @@ def notify_subscriber(phone_number):
 
     # Send a message to the number alerting them of an ISS flyby.
     client.messages.create(to=phone_number,
-                           messaging_service_sid='MESSAGING_SERVICE_SID',
+                           messaging_service_sid='MGf15479a3fb4fb150594723d52391c4f6',
                            body=msg_body)
 
     # Add the subscriber back to the queue to receive their next flyby message.
