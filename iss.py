@@ -47,7 +47,7 @@ def notify_subscriber(number):
     lat, lon = redis_server.get(number).split(',')
 
     # Send a message to the number alerting them of an ISS flyby.
-    client.messages.create(to=number, from_='', body=msg_body)
+    client.messages.create(to=number, from_='A_TWILIO_NUMBER', body=msg_body)
 
     # Add the subscriber back to the queue to receive their next flyby message.
     add_to_queue(number, lat, lon)
