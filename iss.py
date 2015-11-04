@@ -49,6 +49,8 @@ def add_to_queue(phone_number, lat, lon):
 
         print('{} will be notified when ISS passes by {}, {}'
               .format(phone_number, lat, lon))
+    else:
+        print('No ISS flyby can be determined for {}, {}'.format(lat, lon))
 
 
 def notify_subscriber(phone_number):
