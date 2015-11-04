@@ -20,25 +20,35 @@ def get_next_pass(lat, lon):
     location = {'lat': lat, 'lon': lon}
     response = requests.get(iss_url, params=location).json()
 
-    next_pass = response['response'][0]['risetime']
-    next_pass_datetime = datetime.fromtimestamp(next_pass, tz=pytz.utc)
+    if 'response' in response:
+        next_pass = response['response'][0]['risetime']
+        next_pass_datetime = datetime.fromtimestamp(next_pass, tz=pytz.utc)
 
-    print('Next pass for {}, {} is: {}'.format(next_pass_datetime, lat, lon))
-    return next_pass_datetime
+        print('Next pass for {}, {} is: {}'
+              .format(next_pass_datetime, lat, lon))
+        return next_pass_datetime
 
 
 def add_to_queue(phone_number, lat, lon):
+    # Send a text thanking the user for subscribing if they haven't before.
+    if not redis_server.exists(phone_number):
+        client.messages.create(to=phone_number,
+                               messaging_service_sid='MESSAGING_SERVICE_SID',
+                               body='Thanks for subscribing to ISS alerts!')
+
     # Add this phone number to Redis associated with "lat,lon"
     redis_server.set(phone_number, '{},{}'.format(lat, lon))
 
     # Get the datetime object representing the next ISS flyby for this number.
     next_pass_datetime = get_next_pass(lat, lon)
 
-    # Schedule a text to be sent at the time of the next flyby.
-    scheduler.enqueue_at(next_pass_datetime, notify_subscriber, phone_number)
+    if next_pass_datetime:
+        # Schedule a text to be sent at the time of the next flyby.
+        scheduler.enqueue_at(next_pass_datetime,
+                             notify_subscriber, phone_number)
 
-    print('{} will be notified when ISS passes by {}, {}'
-          .format(phone_number, lat, lon))
+        print('{} will be notified when ISS passes by {}, {}'
+              .format(phone_number, lat, lon))
 
 
 def notify_subscriber(phone_number):
@@ -50,7 +60,7 @@ def notify_subscriber(phone_number):
 
     # Send a message to the number alerting them of an ISS flyby.
     client.messages.create(to=phone_number,
-                           messaging_service_sid='MGf15479a3fb4fb150594723d52391c4f6',
+                           messaging_service_sid='MESSAGING_SERVICE_SID',
                            body=msg_body)
 
     # Add the subscriber back to the queue to receive their next flyby message.
